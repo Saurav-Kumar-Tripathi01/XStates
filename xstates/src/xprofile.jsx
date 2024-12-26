@@ -108,7 +108,13 @@ const XProfile = () => {
                 </div>
             </div>
 
-            {message && <p>{message}</p>}
+            {message && (
+        <p style={{ marginTop: '20px', fontSize: '18px' }}>
+          You selected <span style={{ fontWeight: 'bold', fontSize: '30px' }}>{selectedCity}</span>, 
+          <span style={{ color: 'gray', fontWeight: 'bold' }}>{selectedState}</span>, 
+          <span style={{ color: 'gray', fontWeight: 'bold' }}>{selectedCountry}</span>
+        </p>
+      )}
         </div>
     );
 };
