@@ -1,9 +1,9 @@
 import React from 'react';
-import Xprofile from './xprofile'
+import Xstates from './Xstates'
 const App = () => {
   return (
     <div>
-      <Xprofile />
+      <Xstates />
     </div>
   );
 };

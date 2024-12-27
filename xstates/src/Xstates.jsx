@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-const XProfile = () => {
+const xStates = () => {
     const [countries, setCountries] = useState([]);
     const [states, setStates] = useState([]);
     const [cities, setCities] = useState([]);
@@ -26,9 +26,7 @@ const XProfile = () => {
                 setCountries(data);
                 setError('');
             })
-            .catch(() => {
-                setError('Unable to load countries. Please try again later.');
-            })
+            .catch(error => console.error('Error fetching data ')+ error)
             .finally(() => setLoading(false));
     }, []);
 
@@ -57,7 +55,7 @@ const XProfile = () => {
                 return response.json();
             })
             .then((data) => setStates(data))
-            .catch(() => setError('Unable to load states. Please try again later.'));
+            .catch(error => console.error('Error fetching data ')+ error)
     };
 
     // Handle state change
@@ -76,7 +74,7 @@ const XProfile = () => {
                 return response.json();
             })
             .then((data) => setCities(data))
-            .catch(() => setError('Unable to load cities. Please try again later.'));
+            .catch(error => console.error('Error fetching data ')+ error)
     };
 
     // Handle city change
@@ -150,12 +148,12 @@ const XProfile = () => {
                 <p style={{ marginTop: '20px', fontSize: '18px' }}>
                     You selected{' '}
                     <span style={{ fontWeight: 'bold', fontSize: '20px' }}>{selectedCity}</span>,
-                    <span style={{ color: 'gray' }}>{selectedState}</span>,
-                    <span style={{ color: 'gray' }}>{selectedCountry}</span>
+                    <span style={{ color: 'gray' }}> {selectedState}</span>,
+                    <span style={{ color: 'gray' }}> {selectedCountry}</span>
                 </p>
             )}
         </div>
     );
 };
 
-export default XProfile;
+export default xStates;
