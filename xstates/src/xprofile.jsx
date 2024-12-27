@@ -10,14 +10,36 @@ const XProfile = () => {
     const [selectedCity, setSelectedCity] = useState('');
 
     const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
 
+    // Fetch countries on component mount
     useEffect(() => {
         fetch('https://crio-location-selector.onrender.com/countries')
-            .then((response) => response.json())
-            .then((data) => setCountries(data))
-            .catch((error) => console.error('Error fetching countries:', error));
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch countries');
+                }
+                return response.json();
+            })
+            .then((data) => {
+                setCountries(data);
+                setError('');
+            })
+            .catch(() => {
+                setError('Unable to load countries. Please try again later.');
+            })
+            .finally(() => setLoading(false));
     }, []);
 
+    // Synchronize the message whenever the location selection changes
+    useEffect(() => {
+        if (selectedCity && selectedState && selectedCountry) {
+            setMessage(`You selected ${selectedCity}, ${selectedState}, ${selectedCountry}`);
+        }
+    }, [selectedCity, selectedState, selectedCountry]);
+
+    // Handle country change
     const handleCountryChange = (country) => {
         setSelectedCountry(country);
         setSelectedState('');
@@ -25,28 +47,41 @@ const XProfile = () => {
         setMessage('');
         setStates([]);
         setCities([]);
+        setError('');
 
         fetch(`https://crio-location-selector.onrender.com/country=${country}/states`)
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch states');
+                }
+                return response.json();
+            })
             .then((data) => setStates(data))
-            .catch((error) => console.error('Error fetching states:', error));
+            .catch(() => setError('Unable to load states. Please try again later.'));
     };
 
+    // Handle state change
     const handleStateChange = (state) => {
         setSelectedState(state);
         setSelectedCity('');
         setMessage('');
         setCities([]);
+        setError('');
 
         fetch(`https://crio-location-selector.onrender.com/country=${selectedCountry}/state=${state}/cities`)
-            .then((response) => response.json())
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch cities');
+                }
+                return response.json();
+            })
             .then((data) => setCities(data))
-            .catch((error) => console.error('Error fetching cities:', error));
+            .catch(() => setError('Unable to load cities. Please try again later.'));
     };
 
+    // Handle city change
     const handleCityChange = (city) => {
         setSelectedCity(city);
-        setMessage(`You selected ${city}, ${selectedState}, ${selectedCountry}`);
     };
 
     return (
@@ -55,16 +90,21 @@ const XProfile = () => {
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                 <div>
+                    {loading && <p>Loading countries...</p>}
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
                     <select
                         id="country"
                         value={selectedCountry}
                         onChange={(e) => handleCountryChange(e.target.value)}
                         aria-label="Select Country"
                         style={{ padding: '5px', width: '150px' }}
+                        disabled={loading || !!error}
                     >
                         <option value="">Select Country</option>
                         {countries.map((country) => (
-                            <option key={country} value={country}>{country}</option>
+                            <option key={country} value={country}>
+                                {country}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -76,11 +116,13 @@ const XProfile = () => {
                         onChange={(e) => handleStateChange(e.target.value)}
                         aria-label="Select State"
                         style={{ padding: '5px', width: '150px' }}
-                        disabled={!selectedCountry}
+                        disabled={!selectedCountry || !!error}
                     >
                         <option value="">Select State</option>
                         {states.map((state) => (
-                            <option key={state} value={state}>{state}</option>
+                            <option key={state} value={state}>
+                                {state}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -92,11 +134,13 @@ const XProfile = () => {
                         onChange={(e) => handleCityChange(e.target.value)}
                         aria-label="Select City"
                         style={{ padding: '5px', width: '150px' }}
-                        disabled={!selectedState}
+                        disabled={!selectedState || !!error}
                     >
                         <option value="">Select City</option>
                         {cities.map((city) => (
-                            <option key={city} value={city}>{city}</option>
+                            <option key={city} value={city}>
+                                {city}
+                            </option>
                         ))}
                     </select>
                 </div>
@@ -104,7 +148,8 @@ const XProfile = () => {
 
             {message && (
                 <p style={{ marginTop: '20px', fontSize: '18px' }}>
-                    You selected <span style={{ fontWeight: 'bold', fontSize: '20px' }}>{selectedCity}</span>,
+                    You selected{' '}
+                    <span style={{ fontWeight: 'bold', fontSize: '20px' }}>{selectedCity}</span>,
                     <span style={{ color: 'gray' }}>{selectedState}</span>,
                     <span style={{ color: 'gray' }}>{selectedCountry}</span>
                 </p>
