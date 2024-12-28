@@ -10,37 +10,22 @@ const XProfile = () => {
     const [selectedCity, setSelectedCity] = useState('');
 
     const [message, setMessage] = useState('');
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
-    // Fetch countries on component mount
     useEffect(() => {
         fetch('https://crio-location-selector.onrender.com/countries')
             .then((response) => {
                 if (!response.ok) {
-                    throw new Error('Failed to fetch countries');
+                    throw new Error(`HTTP status ${response.status}`);
                 }
                 return response.json();
             })
-            .then((data) => {
-                setCountries(data);
-                setError('');
-            })
-            .catch(() => {
-                setError('Unable to load countries. Please try again later.');
-                setCountries([]);
-            })
-            .finally(() => setLoading(false));
+            .then((data) => setCountries(data))
+            .catch((error) => {
+                console.error('Error fetching countries:', error);
+                setCountries([]); // Clear dropdown
+                setMessage('Unable to load countries. Please try again later.');
+            });
     }, []);
-
-    // Synchronize the message whenever the location selection changes
-    useEffect(() => {
-        if (selectedCity && selectedState && selectedCountry) {
-            setMessage(`You selected ${selectedCity}, ${selectedState}, ${selectedCountry}`);
-        } else {
-            setMessage('');
-        }
-    }, [selectedCity, selectedState, selectedCountry]);
 
     const handleCountryChange = (country) => {
         setSelectedCountry(country);
@@ -49,17 +34,11 @@ const XProfile = () => {
         setMessage('');
         setStates([]);
         setCities([]);
-        setError('');
 
         fetch(`https://crio-location-selector.onrender.com/country=${country}/states`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch states');
-                }
-                return response.json();
-            })
+            .then((response) => response.json())
             .then((data) => setStates(data))
-            .catch(() => setError('Unable to load states. Please try again later.'));
+            .catch((error) => console.error('Error fetching states:', error));
     };
 
     const handleStateChange = (state) => {
@@ -67,21 +46,16 @@ const XProfile = () => {
         setSelectedCity('');
         setMessage('');
         setCities([]);
-        setError('');
 
         fetch(`https://crio-location-selector.onrender.com/country=${selectedCountry}/state=${state}/cities`)
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Failed to fetch cities');
-                }
-                return response.json();
-            })
+            .then((response) => response.json())
             .then((data) => setCities(data))
-            .catch(() => setError('Unable to load cities. Please try again later.'));
+            .catch((error) => console.error('Error fetching cities:', error));
     };
 
     const handleCityChange = (city) => {
         setSelectedCity(city);
+        setMessage(`You selected ${city}, ${selectedState}, ${selectedCountry}`);
     };
 
     return (
@@ -90,21 +64,16 @@ const XProfile = () => {
 
             <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginTop: '20px' }}>
                 <div>
-                    {loading && <p>Loading countries...</p>}
-                    {error && <p style={{ color: 'red' }}>{error}</p>}
                     <select
                         id="country"
                         value={selectedCountry}
                         onChange={(e) => handleCountryChange(e.target.value)}
                         aria-label="Select Country"
                         style={{ padding: '5px', width: '150px' }}
-                        disabled={loading || !!error}
                     >
                         <option value="">Select Country</option>
                         {countries.map((country) => (
-                            <option key={country} value={country}>
-                                {country}
-                            </option>
+                            <option key={country} value={country}>{country}</option>
                         ))}
                     </select>
                 </div>
@@ -116,13 +85,11 @@ const XProfile = () => {
                         onChange={(e) => handleStateChange(e.target.value)}
                         aria-label="Select State"
                         style={{ padding: '5px', width: '150px' }}
-                        disabled={!selectedCountry || !!error}
+                        disabled={!selectedCountry}
                     >
                         <option value="">Select State</option>
                         {states.map((state) => (
-                            <option key={state} value={state}>
-                                {state}
-                            </option>
+                            <option key={state} value={state}>{state}</option>
                         ))}
                     </select>
                 </div>
@@ -134,24 +101,19 @@ const XProfile = () => {
                         onChange={(e) => handleCityChange(e.target.value)}
                         aria-label="Select City"
                         style={{ padding: '5px', width: '150px' }}
-                        disabled={!selectedState || !!error}
+                        disabled={!selectedState}
                     >
                         <option value="">Select City</option>
                         {cities.map((city) => (
-                            <option key={city} value={city}>
-                                {city}
-                            </option>
+                            <option key={city} value={city}>{city}</option>
                         ))}
                     </select>
                 </div>
             </div>
 
             {message && (
-                <p style={{ marginTop: '20px', fontSize: '18px' }}>
-                    You selected{' '}
-                    <span style={{ fontWeight: 'bold', fontSize: '20px' }}>{selectedCity}</span>,
-                    <span style={{ color: 'gray' }}>{selectedState}</span>,
-                    <span style={{ color: 'gray' }}>{selectedCountry}</span>
+                <p id={message.includes('Unable') ? 'error-message' : 'location-message'} style={{ marginTop: '20px', color: message.includes('Unable') ? 'red' : 'black' }}>
+                    {message}
                 </p>
             )}
         </div>
