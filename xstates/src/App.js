@@ -1,5 +1,5 @@
 import React from 'react';
-import Xstates from './Xstates'
+import Xstates from './xprofile'
 const App = () => {
   return (
     <div>
