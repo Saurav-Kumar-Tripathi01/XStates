@@ -28,6 +28,7 @@ const XProfile = () => {
             })
             .catch(() => {
                 setError('Unable to load countries. Please try again later.');
+                setCountries([]);
             })
             .finally(() => setLoading(false));
     }, []);
@@ -36,10 +37,11 @@ const XProfile = () => {
     useEffect(() => {
         if (selectedCity && selectedState && selectedCountry) {
             setMessage(`You selected ${selectedCity}, ${selectedState}, ${selectedCountry}`);
+        } else {
+            setMessage('');
         }
     }, [selectedCity, selectedState, selectedCountry]);
 
-    // Handle country change
     const handleCountryChange = (country) => {
         setSelectedCountry(country);
         setSelectedState('');
@@ -60,7 +62,6 @@ const XProfile = () => {
             .catch(() => setError('Unable to load states. Please try again later.'));
     };
 
-    // Handle state change
     const handleStateChange = (state) => {
         setSelectedState(state);
         setSelectedCity('');
@@ -79,7 +80,6 @@ const XProfile = () => {
             .catch(() => setError('Unable to load cities. Please try again later.'));
     };
 
-    // Handle city change
     const handleCityChange = (city) => {
         setSelectedCity(city);
     };
